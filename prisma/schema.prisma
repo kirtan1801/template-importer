@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Template {
+  id           String    @id @default(uuid(7))
+  name         String
+  sourceFile   String?
+  copiedFromId String?
+  report       Json?
+  createdAt    DateTime  @default(now())
+  sections     Section[]
+}
+
+model Section {
+  id         String   @id @default(uuid(7))
+  templateId String
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  name       String
+  position   Int
+  items      Item[]
+
+  @@index([templateId, position])
+}
+
+model Item {
+  id        String    @id @default(uuid(7))
+  sectionId String
+  section   Section   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  name      String
+  position  Int
+  comments  Comment[]
+
+  @@index([sectionId, position])
+}
+
+model Comment {
+  id       String  @id @default(uuid(7))
+  itemId   String
+  item     Item    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  name     String
+  bodyHtml String
+  kind     String?
+  extra    Json?
+  position Int
+
+  @@index([itemId, position])
+}
